@@ -177,9 +177,9 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 .gauge-head b{font:400 18px "Jua",sans-serif;color:var(--ink)}
 .gauge{position:relative;display:flex;height:30px;border-radius:999px;background:var(--rice-2);box-shadow:inset 0 0 0 2px var(--rice-3)}
 .gauge .z{display:grid;place-items:center;font:400 13px "Jua",sans-serif;color:var(--ink)}
-.gauge .z1{width:75%;background:#CDEBD3;border-radius:999px 0 0 999px}
+.gauge .z1{width:70%;background:#CDEBD3;border-radius:999px 0 0 999px}
 .gauge .z2,.gauge .z4{width:10%;background:#F58CA0;color:#fff;font-size:12px}
-.gauge .z3{width:5%;background:linear-gradient(180deg,#FFE9A0,#F5B82E);color:#6B4A00;font-size:11px;box-shadow:inset 0 0 0 2px #FFF4C8}
+.gauge .z3{width:10%;background:linear-gradient(180deg,#FFE9A0,#F5B82E);color:#6B4A00;font-size:12px;box-shadow:inset 0 0 0 2px #FFF4C8}
 .gauge .z4{border-radius:0 999px 999px 0}
 .gauge .needle{position:absolute;top:-5px;bottom:-5px;left:50%;width:8px;margin-left:-4px;border-radius:4px;background:var(--ink);box-shadow:0 0 0 2px #fff,0 2px 6px rgba(0,0,0,.3)}
 .gauge.idle{opacity:.45}
@@ -820,15 +820,15 @@ kbd{font:400 14px "Jua",sans-serif;color:var(--ink);background:#fff;border:1px s
   function drawSticks() { sticks.forEach((s, i) => { s.el.innerHTML = stickSVG(s.flat, i === 0); }); }
 
   // 게이지 구간별 결과 확률(%) · 순서: 빽도, 도, 개, 걸, 윷, 모, 낙
-  // 길이 비율 일반 7.5 : 위험 1 : 황금 0.5 : 위험 1
+  // 길이 비율 일반 7 : 위험 1 : 황금 1 : 위험 1
   const REAL = [1, 3, 6, 4, 1, 1].map(n => n / 16);            // 실제 윷 (막대 4개, 반반) 확률
   const withNak = (base, nak) => [...base.map(x => x * (100 - nak)), nak];
   const NORMAL = withNak(REAL, 5);                                // 일반존: 실제 윷 × 95% + 낙 5%
   const DANGER = withNak(REAL, 35);                               // 위험존: 실제 윷 비율 × 65% + 낙 35%
   const GOLD = withNak([6, 10, 24, 30, 17, 13].map(n => n / 100), 1); // 황금존: 기존 '힘껏' × 99% + 낙 1%
   const ZONES = [
-    { max: 75, name: '일반', w: NORMAL },
-    { max: 85, name: '위험!', w: DANGER },
+    { max: 70, name: '일반', w: NORMAL },
+    { max: 80, name: '위험!', w: DANGER },
     { max: 90, name: '황금!', w: GOLD },
     { max: 101, name: '위험!', w: DANGER },
   ];
