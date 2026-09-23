@@ -3,8 +3,8 @@
 브라우저에서 바로 하는 윷놀이 게임입니다. 설치할 것은 없습니다.
 
 ## 바로 실행 (더블클릭)
-- Windows: `윷놀이 실행 (Windows).bat`
-- Mac: `윷놀이 실행 (Mac).command` (처음 한 번은 오른쪽 클릭 → 열기)
+- Windows: `start-windows.bat`
+- Mac: `start-mac.command` (처음 한 번은 오른쪽 클릭 → 열기)
 
 Python이 설치돼 있으면 로컬 서버를 켜고 브라우저로 `http://localhost:8000`을 엽니다(유튜브 배경음 재생 가능). 없으면 `index.html`을 바로 엽니다.
 
