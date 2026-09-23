@@ -177,10 +177,10 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 .gauge-head b{font:400 18px "Jua",sans-serif;color:var(--ink)}
 .gauge{position:relative;display:flex;height:30px;border-radius:999px;background:var(--rice-2);box-shadow:inset 0 0 0 2px var(--rice-3)}
 .gauge .z{display:grid;place-items:center;font:400 13px "Jua",sans-serif;color:var(--ink)}
-.gauge .z1{width:33%;background:#CDEBD3;border-radius:999px 0 0 999px}
-.gauge .z2{width:33%;background:#FFE7A6}
-.gauge .z3{width:24%;background:#FFC3D2}
-.gauge .z4{width:10%;background:#F0506E;color:#fff;border-radius:0 999px 999px 0}
+.gauge .z1{width:75%;background:#CDEBD3;border-radius:999px 0 0 999px}
+.gauge .z2,.gauge .z4{width:10%;background:#F58CA0;color:#fff;font-size:12px}
+.gauge .z3{width:5%;background:linear-gradient(180deg,#FFE9A0,#F5B82E);color:#6B4A00;font-size:11px;box-shadow:inset 0 0 0 2px #FFF4C8}
+.gauge .z4{border-radius:0 999px 999px 0}
 .gauge .needle{position:absolute;top:-5px;bottom:-5px;left:50%;width:8px;margin-left:-4px;border-radius:4px;background:var(--ink);box-shadow:0 0 0 2px #fff,0 2px 6px rgba(0,0,0,.3)}
 .gauge.idle{opacity:.45}
 .hint{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
@@ -312,9 +312,9 @@ kbd{font:400 14px "Jua",sans-serif;color:var(--ink);background:#fff;border:1px s
           <svg class="pine r" viewBox="0 0 74 60" aria-hidden="true"><g stroke="#5F9C5A" stroke-width="2" stroke-linecap="round" fill="none"><path d="M4 56 L40 30"/><path d="M40 30 L70 18"/><path d="M40 30 L68 32"/><path d="M40 30 L62 44"/><path d="M40 30 L58 6"/></g><circle cx="40" cy="30" r="3" fill="#8B5A35"/></svg>
         </div>
         <div class="gauge-wrap">
-          <div class="gauge-head"><span>던지는 힘</span><b id="zoneLabel">적당히</b></div>
+          <div class="gauge-head"><span>던지는 힘</span><b id="zoneLabel">일반</b></div>
           <div class="gauge" id="gauge" aria-hidden="true">
-            <span class="z z1">살살</span><span class="z z2">적당히</span><span class="z z3">힘껏</span><span class="z z4">!</span>
+            <span class="z z1">일반</span><span class="z z2">위험</span><span class="z z3">황금</span><span class="z z4">위험</span>
             <i class="needle" id="needle"></i>
           </div>
         </div>
@@ -370,6 +370,7 @@ kbd{font:400 14px "Jua",sans-serif;color:var(--ink);background:#fff;border:1px s
   ];
   const RESULT = {
     '-1': { name: '빽도', sub: '한 칸 뒤로', color: '#FF8FA3' },
+    0: { name: '낙', sub: '멍석 밖으로! 이번 던지기는 무효', color: '#CFC6E6' },
     1: { name: '도', sub: '1칸', color: '#FFFFFF' },
     2: { name: '개', sub: '2칸', color: '#C9F0B8' },
     3: { name: '걸', sub: '3칸', color: '#FFE08A' },
@@ -447,6 +448,12 @@ kbd{font:400 14px "Jua",sans-serif;color:var(--ink);background:#fff;border:1px s
         tone({ t, type: 'triangle', f: 700 + Math.random() * 400, dur: .08, vol: .14 });
       }),
       result: fx(r => {
+        if (r === 0) {
+          tone({ f: 140, f2: 45, dur: .35, vol: .6 });
+          noise({ t: .02, type: 'lowpass', f: 900, f2: 200, dur: .3, vol: .5 });
+          [72, 69, 67, 64].forEach((m, i) => tone({ t: .25 + i * .13, type: 'triangle', f: mtof(m), dur: .25, vol: .14 }));
+          return;
+        }
         if (r < 0) {
           tone({ type: 'sawtooth', f: 520, f2: 110, dur: .7, vol: .16, lp: 1100 });
           tone({ t: .05, type: 'sine', f: 260, f2: 70, dur: .6, vol: .2 });
@@ -708,7 +715,7 @@ kbd{font:400 14px "Jua",sans-serif;color:var(--ink);background:#fff;border:1px s
 
   function nextNode(node, prev, first) {
     if (node === HOME) return 1;
-    if (node === 0) return FIN;
+    if (node === 0) return FIN;           // 참먹이에 서 있던 말은 한 걸음만 나가도 완주
     if (first) {
       if (node === 5) return 20;
       if (node === 10) return 25;
@@ -716,7 +723,7 @@ kbd{font:400 14px "Jua",sans-serif;color:var(--ink);background:#fff;border:1px s
     }
     if (node >= 1 && node <= 18) return node + 1;
     switch (node) {
-      case 19: return FIN;
+      case 19: return 0;
       case 20: return 21;
       case 21: return 22;
       case 22: return prev === 21 ? 23 : 27;
@@ -725,7 +732,7 @@ kbd{font:400 14px "Jua",sans-serif;color:var(--ink);background:#fff;border:1px s
       case 25: return 26;
       case 26: return 22;
       case 27: return 28;
-      case 28: return FIN;
+      case 28: return 0;
     }
     return FIN;
   }
@@ -812,14 +819,20 @@ kbd{font:400 14px "Jua",sans-serif;color:var(--ink);background:#fff;border:1px s
   }
   function drawSticks() { sticks.forEach((s, i) => { s.el.innerHTML = stickSVG(s.flat, i === 0); }); }
 
-  // 게이지 구간별 결과 가중치 · 순서: 빽도, 도, 개, 걸, 윷, 모
+  // 게이지 구간별 결과 확률(%) · 순서: 빽도, 도, 개, 걸, 윷, 모, 낙
+  // 길이 비율 일반 7.5 : 위험 1 : 황금 0.5 : 위험 1
+  const REAL = [1, 3, 6, 4, 1, 1].map(n => n / 16);            // 실제 윷 (막대 4개, 반반) 확률
+  const withNak = (base, nak) => [...base.map(x => x * (100 - nak)), nak];
+  const NORMAL = withNak(REAL, 5);                                // 일반존: 실제 윷 × 95% + 낙 5%
+  const DANGER = withNak(REAL, 35);                               // 위험존: 실제 윷 비율 × 65% + 낙 35%
+  const GOLD = withNak([6, 10, 24, 30, 17, 13].map(n => n / 100), 1); // 황금존: 기존 '힘껏' × 99% + 낙 1%
   const ZONES = [
-    { max: 33, name: '살살', w: [8, 30, 35, 18, 6, 3] },
-    { max: 66, name: '적당히', w: [4, 20, 36, 26, 8, 6] },
-    { max: 90, name: '힘껏', w: [6, 10, 24, 30, 17, 13] },
-    { max: 101, name: '너무 세게!', w: [22, 14, 14, 14, 17, 19] },
+    { max: 75, name: '일반', w: NORMAL },
+    { max: 85, name: '위험!', w: DANGER },
+    { max: 90, name: '황금!', w: GOLD },
+    { max: 101, name: '위험!', w: DANGER },
   ];
-  const ORDER = [-1, 1, 2, 3, 4, 5];
+  const ORDER = [-1, 1, 2, 3, 4, 5, 0];
   const zoneOf = p => ZONES.find(z => p < z.max);
   function rollByPower(power) {
     const w = zoneOf(power).w;
@@ -827,7 +840,8 @@ kbd{font:400 14px "Jua",sans-serif;color:var(--ink);background:#fff;border:1px s
     for (let i = 0; i < w.length; i++) { if ((x -= w[i]) < 0) { r = ORDER[i]; break; } }
     // 결과와 맞는 윷가락 모양 만들기 (0번 막대에 빽도 표시)
     let flats = [false, false, false, false];
-    if (r === 4) flats = [true, true, true, true];
+    if (r === 0) flats = flats.map(() => Math.random() < .5);
+    else if (r === 4) flats = [true, true, true, true];
     else if (r === -1) flats = [true, false, false, false];
     else if (r === 1) flats[1 + Math.floor(Math.random() * 3)] = true;
     else if (r === 2 || r === 3) {
@@ -837,7 +851,7 @@ kbd{font:400 14px "Jua",sans-serif;color:var(--ink);background:#fff;border:1px s
     return { flats, r };
   }
 
-  async function animateThrow(flats, power) {
+  async function animateThrow(flats, power, nak) {
     Sound.whoosh();
     const flipTimer = setInterval(() => {
       sticks.forEach((s, i) => { s.flat = Math.random() < 0.5; s.el.innerHTML = stickSVG(s.flat, i === 0); });
@@ -850,8 +864,10 @@ kbd{font:400 14px "Jua",sans-serif;color:var(--ink);background:#fff;border:1px s
       const rot = (Math.random() - 0.5) * 60;
       const spin = (Math.random() < 0.5 ? -1 : 1) * (360 + power * 7 + Math.random() * 200);
       const dur = reduced ? 60 : 750 + power * 4 + i * 70;
-      s.final = `translate(${fx}px, ${fy}px) rotate(${rot}deg)`;
-      Sound.clack(dur * 0.85 / 1000);
+      s.final = nak
+        ? `translate(${(i < 2 ? -1 : 1) * (260 + Math.random() * 120)}px, ${120 + Math.random() * 80}px) rotate(${rot * 4}deg)`
+        : `translate(${fx}px, ${fy}px) rotate(${rot}deg)`;
+      if (!nak) Sound.clack(dur * 0.85 / 1000);
       return s.el.animate([
         { transform: 'translate(0,0) rotate(0deg) scale(1)' },
         { transform: `translate(${dx}px, -${lift}px) rotate(${spin / 2}deg) scale(${1 + power / 600})`, offset: .45 },
@@ -877,7 +893,7 @@ kbd{font:400 14px "Jua",sans-serif;color:var(--ink);background:#fff;border:1px s
     $('rpName').textContent = RESULT[r].name + '!';
     $('rpName').style.color = RESULT[r].color;
     $('rpSub').textContent = `${RESULT[r].sub} · 힘 ${Math.round(power)} (${zoneOf(power).name})`;
-    $('rpSticks').innerHTML = sticks.map((s, i) => stickSVG(s.flat, i === 0)).join('');
+    $('rpSticks').innerHTML = r === 0 ? '' : sticks.map((s, i) => stickSVG(s.flat, i === 0)).join('');
     pop.hidden = false;
     pop.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, fill: 'forwards' });
     $('rpCard').animate([
@@ -1189,8 +1205,15 @@ kbd{font:400 14px "Jua",sans-serif;color:var(--ink);background:#fff;border:1px s
     const power = gauge.power;
     S.busy = true; S.pending--; render();
     const { flats, r } = rollByPower(power);
-    await animateThrow(flats, power);
+    await animateThrow(flats, power, r === 0);
     await showResultPop(r, power);
+    if (r === 0) {
+      sticks.forEach(st => { st.el.style.transform = ''; });
+      addLog(S.current, `${nm(S.current)}: 낙 — 던지기 무효`);
+      S.busy = false;
+      advance();
+      return;
+    }
     S.results.push(r);
     S.sel = S.results.length - 1;
     if (r >= 4) S.pending++;
@@ -1376,7 +1399,7 @@ kbd{font:400 14px "Jua",sans-serif;color:var(--ink);background:#fff;border:1px s
 
   // ================= 힘 게이지 =================
   const gauge = { power: 0, t0: performance.now() };
-  const PERIOD = 1300;
+  const PERIOD = 1000;
   function gaugeLoop(now) {
     const active = S && !S.busy && S.pending > 0 && S.winner === null && !setupOpen;
     if (active) {
